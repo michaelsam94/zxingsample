@@ -90,12 +90,12 @@ final class DecodeHandler extends Handler {
             mQrCodeReader.reset();
         }
 
+        Message message;
         if (rawResult != null) {
-            Message message = Message.obtain(mActivity.getCaptureActivityHandler(), R.id.decode_succeeded, rawResult);
-            message.sendToTarget();
+            message = Message.obtain(mActivity.getCaptureActivityHandler(), R.id.decode_succeeded, rawResult);
         } else {
-            Message message = Message.obtain(mActivity.getCaptureActivityHandler(), R.id.decode_failed);
-            message.sendToTarget();
+            message = Message.obtain(mActivity.getCaptureActivityHandler(), R.id.decode_failed);
         }
+        message.sendToTarget();
     }
 }

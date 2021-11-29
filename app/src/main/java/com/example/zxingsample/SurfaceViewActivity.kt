@@ -1,6 +1,5 @@
 package com.example.zxingsample
 
-import android.hardware.Camera
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -17,10 +16,8 @@ import java.io.IOException
 class SurfaceViewActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
     lateinit var surfaceView: SurfaceView
-    lateinit var camera: Camera
     private var mHasSurface = false
-
-    private var mCaptureActivityHandler: SurfaceViewActivityHandler? = null
+    private var mSurfaceViewActivityHandler: SurfaceViewActivityHandler? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,11 +36,12 @@ class SurfaceViewActivity : AppCompatActivity(), SurfaceHolder.Callback {
         } else {
             surfaceHolder.addCallback(this)
         }
-
     }
 
     override fun onPause() {
         super.onPause()
+        mSurfaceViewActivityHandler?.quitSynchronously()
+        mSurfaceViewActivityHandler = null
         CameraManager.get().closeDriver()
     }
 
@@ -65,8 +63,8 @@ class SurfaceViewActivity : AppCompatActivity(), SurfaceHolder.Callback {
     private fun initCamera(holder: SurfaceHolder) {
         try {
             CameraManager.get().openDriver(holder)
-            if (mCaptureActivityHandler == null) {
-                mCaptureActivityHandler = SurfaceViewActivityHandler(this)
+            if (mSurfaceViewActivityHandler == null) {
+                mSurfaceViewActivityHandler = SurfaceViewActivityHandler(this)
             }
         } catch (e: IOException) {
             Toast.makeText(this, "couldn't detect camera", Toast.LENGTH_SHORT)
@@ -76,22 +74,16 @@ class SurfaceViewActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
     fun handleDecode(result: Result?) {
         if (null == result) {
-            restartPreview()
+            mSurfaceViewActivityHandler?.restartPreviewAndDecode()
         } else {
             val resultString = result.text
             Toast.makeText(this,resultString,Toast.LENGTH_SHORT).show()
             finish()
-            Log.d("SurfaceViewActivity",resultString)
         }
     }
 
     fun getCaptureActivityHandler(): Handler? {
-        return mCaptureActivityHandler
+        return mSurfaceViewActivityHandler
     }
 
-    private fun restartPreview() {
-        if (null != mCaptureActivityHandler) {
-            mCaptureActivityHandler?.restartPreviewAndDecode()
-        }
-    }
 }
